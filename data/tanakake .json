@@ -1,0 +1,543 @@
+{
+  "nodes": [
+    {
+      "id": "self",
+      "type": "person",
+      "position": {
+        "x": 150,
+        "y": 260
+      },
+      "data": {
+        "person": {
+          "id": "self",
+          "name": "田中太郎",
+          "gender": "M",
+          "birthYear": 1959,
+          "isDeceased": false,
+          "isSelf": true,
+          "isKeyPerson": false,
+          "generation": 0,
+          "note": ""
+        }
+      },
+      "width": 44,
+      "height": 68,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 260
+      }
+    },
+    {
+      "id": "wife",
+      "type": "person",
+      "position": {
+        "x": 330,
+        "y": 260
+      },
+      "data": {
+        "person": {
+          "id": "wife",
+          "name": "田中花子",
+          "gender": "F",
+          "birthYear": 1962,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 0,
+          "note": ""
+        }
+      },
+      "width": 44,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 330,
+        "y": 260
+      }
+    },
+    {
+      "id": "son1",
+      "type": "person",
+      "position": {
+        "x": 200,
+        "y": 420
+      },
+      "data": {
+        "person": {
+          "id": "son1",
+          "name": "田中一郎",
+          "gender": "M",
+          "birthYear": 1986,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 1,
+          "note": ""
+        }
+      },
+      "width": 44,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 200,
+        "y": 420
+      }
+    },
+    {
+      "id": "daughter1",
+      "type": "person",
+      "position": {
+        "x": 560,
+        "y": 420
+      },
+      "data": {
+        "person": {
+          "id": "daughter1",
+          "name": "田中美咲",
+          "gender": "F",
+          "birthYear": 1989,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 1,
+          "note": ""
+        }
+      },
+      "width": 44,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 560,
+        "y": 420
+      }
+    },
+    {
+      "id": "father",
+      "type": "person",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "person": {
+          "id": "father",
+          "name": "田中（父）",
+          "gender": "M",
+          "birthYear": 1896,
+          "isDeceased": true,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": -1,
+          "note": ""
+        }
+      },
+      "width": 55,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "mother",
+      "type": "person",
+      "position": {
+        "x": 280,
+        "y": 100
+      },
+      "data": {
+        "person": {
+          "id": "mother",
+          "name": "田中（母）",
+          "gender": "F",
+          "birthYear": 1936,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": -1,
+          "note": "施設入所中、認知症"
+        }
+      },
+      "width": 60,
+      "height": 92,
+      "positionAbsolute": {
+        "x": 280,
+        "y": 100
+      }
+    },
+    {
+      "id": "son1_wife",
+      "type": "person",
+      "position": {
+        "x": 380,
+        "y": 420
+      },
+      "data": {
+        "person": {
+          "id": "son1_wife",
+          "name": "田中一郎の妻",
+          "gender": "F",
+          "birthYear": 1986,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 1,
+          "note": ""
+        }
+      },
+      "width": 66,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 420
+      }
+    },
+    {
+      "id": "grandson1",
+      "type": "person",
+      "position": {
+        "x": 250,
+        "y": 580
+      },
+      "data": {
+        "person": {
+          "id": "grandson1",
+          "name": "田中一郎の息子１",
+          "gender": "M",
+          "birthYear": 2010,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 2,
+          "note": ""
+        }
+      },
+      "width": 88,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 250,
+        "y": 580
+      }
+    },
+    {
+      "id": "grandson2",
+      "type": "person",
+      "position": {
+        "x": 430,
+        "y": 580
+      },
+      "data": {
+        "person": {
+          "id": "grandson2",
+          "name": "田中一郎の息子２",
+          "gender": "M",
+          "birthYear": 2012,
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 2,
+          "note": ""
+        }
+      },
+      "width": 88,
+      "height": 66,
+      "positionAbsolute": {
+        "x": 430,
+        "y": 580
+      }
+    },
+    {
+      "id": "marriage-node-0",
+      "type": "marriage",
+      "position": {
+        "x": 240,
+        "y": 272
+      },
+      "data": {
+        "status": "married"
+      },
+      "draggable": false,
+      "width": 10,
+      "height": 10,
+      "positionAbsolute": {
+        "x": 240,
+        "y": 272
+      }
+    },
+    {
+      "id": "marriage-node-1",
+      "type": "marriage",
+      "position": {
+        "x": 190,
+        "y": 112
+      },
+      "data": {
+        "status": "married"
+      },
+      "draggable": false,
+      "width": 10,
+      "height": 10,
+      "positionAbsolute": {
+        "x": 190,
+        "y": 112
+      }
+    },
+    {
+      "id": "marriage-node-2",
+      "type": "marriage",
+      "position": {
+        "x": 290,
+        "y": 432
+      },
+      "data": {
+        "status": "married"
+      },
+      "draggable": false,
+      "width": 10,
+      "height": 10,
+      "positionAbsolute": {
+        "x": 290,
+        "y": 432
+      }
+    },
+    {
+      "id": "marriage-node-3",
+      "type": "marriage",
+      "position": {
+        "x": 610,
+        "y": 432
+      },
+      "data": {
+        "status": "divorced"
+      },
+      "draggable": false,
+      "width": 10,
+      "height": 10,
+      "positionAbsolute": {
+        "x": 610,
+        "y": 432
+      }
+    },
+    {
+      "id": "person_1767229464417",
+      "type": "person",
+      "position": {
+        "x": 735,
+        "y": 435
+      },
+      "data": {
+        "person": {
+          "id": "person_1767229464417",
+          "name": "不明",
+          "gender": "U",
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 0
+        }
+      },
+      "width": 33,
+      "height": 53,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 735,
+        "y": 435
+      },
+      "dragging": false
+    },
+    {
+      "id": "person_1767229520039",
+      "type": "person",
+      "position": {
+        "x": 226.25975164380156,
+        "y": 166.0353451601486
+      },
+      "data": {
+        "person": {
+          "id": "person_1767229520039",
+          "name": "不明",
+          "gender": "U",
+          "isDeceased": false,
+          "isSelf": false,
+          "isKeyPerson": false,
+          "generation": 0
+        }
+      },
+      "width": 33,
+      "height": 53,
+      "positionAbsolute": {
+        "x": 226.25975164380156,
+        "y": 166.0353451601486
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-husband-0",
+      "source": "self",
+      "target": "marriage-node-0",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-wife-0",
+      "source": "wife",
+      "target": "marriage-node-0",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "child-0-0",
+      "source": "marriage-node-0",
+      "target": "son1",
+      "sourceHandle": "bottom-source",
+      "targetHandle": "top"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "child-0-1",
+      "source": "marriage-node-0",
+      "target": "daughter1",
+      "sourceHandle": "bottom-source",
+      "targetHandle": "top",
+      "selected": true
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-husband-1",
+      "source": "father",
+      "target": "marriage-node-1",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-wife-1",
+      "source": "mother",
+      "target": "marriage-node-1",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "child-1-0",
+      "source": "marriage-node-1",
+      "target": "self",
+      "sourceHandle": "bottom-source",
+      "targetHandle": "top"
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-husband-2",
+      "source": "son1",
+      "target": "marriage-node-2",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-wife-2",
+      "source": "son1_wife",
+      "target": "marriage-node-2",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "child-2-0",
+      "source": "marriage-node-2",
+      "target": "grandson1",
+      "sourceHandle": "bottom-source",
+      "targetHandle": "top"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "child-2-1",
+      "source": "marriage-node-2",
+      "target": "grandson2",
+      "sourceHandle": "bottom-source",
+      "targetHandle": "top"
+    },
+    {
+      "type": "straight",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "id": "edge-husband-3",
+      "source": "daughter1",
+      "target": "marriage-node-3",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "source": "daughter1",
+      "sourceHandle": "right-target",
+      "target": "person_1767229464417",
+      "targetHandle": "left-target",
+      "id": "reactflow__edge-daughter1right-target-person_1767229464417left-target"
+    },
+    {
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#333",
+        "strokeWidth": 2
+      },
+      "source": "marriage-node-3",
+      "sourceHandle": "bottom-source",
+      "target": "person_1767229464417",
+      "targetHandle": "top",
+      "id": "reactflow__edge-marriage-node-3bottom-source-person_1767229464417top",
+      "selected": false
+    }
+  ]
+}
