@@ -8,7 +8,7 @@ export const convertToReactFlow = (data: any): { nodes: Node[], edges: Edge[] } 
     const members = data.members || [];
     const marriages = data.marriages || [];
 
-    const memberMap = new Map(members.map((m: any) => [m.id, m]));
+    const memberMap = new Map<string, any>(members.map((m: any) => [m.id, m]));
 
     // 世代ごとにグループ化
     const generations: { [key: number]: any[] } = {};
