@@ -297,17 +297,39 @@ function GenogramEditorContent() {
         generation: 0,
       };
 
+      // 画面中央に配置する計算 (viewportの中心)
+      let posX = 100;
+      let posY = 100;
+
+      // reactFlowInstanceがなくても計算できるように簡易的なロジック
+      // 本来は project() を使うと良いが、ここでは単純に既存ノードの平均位置やラッパーがあればそれを使う
+      // しかしもっと単純に、現在表示されている領域の中心を取得したい
+      // getNodes()で既存ノードがあれば、その最後のノードの近く、なければ(100,100)
+      const currentNodes = getNodes();
+      if (currentNodes.length > 0) {
+        const lastNode = currentNodes[currentNodes.length - 1];
+        posX = lastNode.position.x + 50;
+        posY = lastNode.position.y + 50;
+      }
+
+      // もしgetNodesで取得できなければ、画面中央(とりあえず固定値よりはマシな位置)にしておく
+      // const center = project({ x: window.innerWidth / 2, y: window.innerHeight / 2 }); が理想だが...
+
       const newNode: Node = {
         id,
         type: 'person',
-        position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+        position: { x: posX, y: posY },
         data: { person },
       };
 
       setNodes((nds) => [...nds, newNode]);
       setTimeout(() => takeSnapshot([...nodes, newNode], edges), 0);
+
+      // 追加したノードが見えるように少し移動するか、選択状態にする
+      setSelectedPerson(person);
+      setSelectedMarriage(null);
     },
-    [setNodes, nodes, edges, takeSnapshot]
+    [setNodes, nodes, edges, takeSnapshot, getNodes]
   );
 
   const updatePerson = useCallback(
@@ -369,16 +391,29 @@ function GenogramEditorContent() {
       return;
     }
 
-    // 1. 全体が見えるようにフィットさせる（余白少なめ）
-    await fitView({ padding: 0.1, duration: 200 });
+    // 1. 全体が見えるようにフィットさせる
+    await fitView({ padding: 0.2, duration: 200 });
 
-    // 少し待ってから保存（アニメーション完了待ち）
+    // 2. レンダリング完了待ち（時間を延ばす）
     setTimeout(() => {
       const filter = (node: HTMLElement) => {
         return !node.classList?.contains('no-export');
       };
 
-      toPng(reactFlowWrapper.current!, { cacheBust: true, backgroundColor: '#fff', filter })
+      const width = reactFlowWrapper.current!.offsetWidth;
+      const height = reactFlowWrapper.current!.offsetHeight;
+
+      toPng(reactFlowWrapper.current!, {
+        cacheBust: true,
+        backgroundColor: '#fff',
+        filter,
+        width: width,
+        height: height,
+        style: {
+          width: `${width}px`,
+          height: `${height}px`,
+        }
+      })
         .then((dataUrl) => {
           const link = document.createElement('a');
           link.download = 'genogram.png';
@@ -389,7 +424,7 @@ function GenogramEditorContent() {
           console.error('oops, something went wrong!', err);
           alert('画像の保存に失敗しました');
         });
-    }, 300);
+    }, 1000); // 300->1000msに延長
 
   }, [reactFlowWrapper, fitView]);
 
