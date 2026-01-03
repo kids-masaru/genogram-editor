@@ -53,16 +53,20 @@ function GenogramEditorContent() {
 
   const { getNodes, getEdges, fitView } = useReactFlow();
 
+  // URLパラメータの無限ループ防止用Ref
+  const loadedDataRef = useRef<string | null>(null);
+
   // URLパラメータからのデータ読み込み
   useEffect(() => {
     const dataParam = searchParams.get('data');
-    if (dataParam) {
+    if (dataParam && dataParam !== loadedDataRef.current) {
       try {
-        // スペースが+に変換されている場合があるので戻すなどの処理が必要なケースもあるが、
-        // LZString.decompressFromEncodedURIComponentはURLセーフな文字を前提とするため通常はそのままでOK
+        console.log('Param changed, loading data...');
         const decompressed = LZString.decompressFromEncodedURIComponent(dataParam);
         if (decompressed) {
           console.log('Data loaded from URL');
+          loadedDataRef.current = dataParam; // ロード済みとしてマーク
+
           const jsonData = JSON.parse(decompressed);
           const { nodes: newNodes, edges: newEdges } = convertToReactFlow(jsonData);
 
