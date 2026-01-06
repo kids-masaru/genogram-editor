@@ -553,78 +553,78 @@ export default function BodyMapEditor() {
                 </Stage>
             </div>
 
-            <div className="absolute top-20 right-4 w-72 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden flex flex-col z-40 p-5">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <div className="absolute top-20 right-4 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden flex flex-col z-40 p-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
+                <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
                     <span>🖌️</span> 身体図エディタ
                 </h2>
 
-                <div className="mb-6">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">ペンツール (囲んで指定)</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="mb-3">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ペンツール</h3>
+                    <div className="grid grid-cols-2 gap-2">
                         {(Object.keys(MARKER_CONFIG) as MarkerType[]).map(type => (
                             <button
                                 key={type}
                                 onClick={() => setSelectedType(type)}
-                                className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all h-20
+                                className={`flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all h-14
                                     ${selectedType === type
                                         ? `bg-blue-50 border-${MARKER_CONFIG[type].color} ring-2 ring-blue-200 border-opacity-100`
                                         : 'bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-300'
                                     }`}
                                 style={{ borderColor: selectedType === type ? MARKER_CONFIG[type].color : '' }}
                             >
-                                <span className="text-2xl mb-1">{MARKER_CONFIG[type].icon}</span>
-                                <span className="text-xs font-bold text-gray-600">{MARKER_CONFIG[type].label}</span>
+                                <span className="text-lg">{MARKER_CONFIG[type].icon}</span>
+                                <span className="text-[10px] font-bold text-gray-600">{MARKER_CONFIG[type].label}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="mb-6 flex-1">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">詳細編集</h3>
+                <div className="mb-3 flex-1 min-h-0">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">詳細編集</h3>
                     {selectedMarker ? (
-                        <div className="space-y-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <div className="flex items-center gap-2 mb-1 text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">
+                        <div className="space-y-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 border-b border-gray-200 pb-1">
                                 <span>{MARKER_CONFIG[selectedMarker.type].icon}</span>
                                 <span>{MARKER_CONFIG[selectedMarker.type].label}</span>
                             </div>
                             <textarea
-                                className="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 outline-none bg-white"
-                                rows={3}
-                                placeholder="詳細なコメントを入力..."
+                                className="w-full text-xs p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 outline-none bg-white"
+                                rows={2}
+                                placeholder="コメントを入力..."
                                 value={selectedMarker.text}
                                 onChange={(e) => updateSelectedText(e.target.value)}
                             />
                             <button
                                 onClick={deleteSelected}
-                                className="w-full py-2 bg-white border border-red-200 text-red-600 rounded text-xs font-bold hover:bg-red-50 transition-colors"
+                                className="w-full py-1.5 bg-white border border-red-200 text-red-600 rounded text-xs font-bold hover:bg-red-50 transition-colors"
                             >
                                 🗑️ 削除
                             </button>
                         </div>
                     ) : (
-                        <div className="text-sm text-center py-10 bg-gray-50 rounded-lg text-gray-400 border-2 border-dashed border-gray-200">
-                            図上のマーカーをクリック<br />して編集
+                        <div className="text-xs text-center py-4 bg-gray-50 rounded-lg text-gray-400 border-2 border-dashed border-gray-200">
+                            マーカーをクリックして編集
                         </div>
                     )}
                 </div>
 
-                <div className="mt-auto space-y-3 pt-4 border-t border-gray-100">
+                <div className="space-y-2 pt-2 border-t border-gray-100">
 
-                    <div className="grid grid-cols-2 gap-2">
-                        <button onClick={saveToServer} className="py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg text-xs font-bold hover:bg-gray-50 flex items-center justify-center gap-1">💾 保存</button>
-                        <button onClick={loadListFromServer} className="py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg text-xs font-bold hover:bg-gray-50 flex items-center justify-center gap-1">📂 読込</button>
+                    <div className="grid grid-cols-2 gap-1.5">
+                        <button onClick={saveToServer} className="py-1.5 bg-white text-gray-700 border border-gray-300 rounded text-xs font-bold hover:bg-gray-50 flex items-center justify-center gap-1">💾 保存</button>
+                        <button onClick={loadListFromServer} className="py-1.5 bg-white text-gray-700 border border-gray-300 rounded text-xs font-bold hover:bg-gray-50 flex items-center justify-center gap-1">📂 読込</button>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                         <button
                             onClick={exportImage}
-                            className="flex-1 py-2 bg-orange-50 text-orange-600 border border-orange-200 rounded-lg text-xs font-bold hover:bg-orange-100 transition-all"
+                            className="py-1.5 bg-orange-50 text-orange-600 border border-orange-200 rounded text-xs font-bold hover:bg-orange-100 transition-all"
                         >
                             📷 画像
                         </button>
                         <button
                             onClick={clearAll}
-                            className="flex-1 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-100 transition-all"
+                            className="py-1.5 bg-red-50 text-red-600 border border-red-200 rounded text-xs font-bold hover:bg-red-100 transition-all"
                         >
                             🗑️ 全消去
                         </button>
