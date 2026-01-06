@@ -60,7 +60,7 @@ function GenogramEditorContent() {
       return;
     }
     setGenogramData({ nodes, edges });
-  }, [nodes, edges, setGenogramData, genogramData]);
+  }, [nodes, edges, setGenogramData]);
 
   // ... (History hooks)
   const { takeSnapshot, undo, redo, canUndo, canRedo } = useHistory(initialNodes, initialEdges);
