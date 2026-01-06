@@ -51,10 +51,12 @@ const BodyMapImage = () => {
     return (
         <KonvaImage
             image={image}
-            x={100}
-            y={50}
-            width={1000}
-            height={800}
+            x={225}    // Centered horizontally: (1400 - 750) / 2 = 325? No, previous was 100 with width 1000. 
+            // Original: 1000x800. 75% = 750x600.
+            // Center 750 in 1400 canvas: (1400-750)/2 = 325. Let's use 325.
+            y={150}    // Center 600 in 900 canvas: (900-600)/2 = 150.
+            width={750}  // 75% of 1000
+            height={600} // 75% of 800. Aspect ratio maintained (1000/800 = 1.25, 750/600 = 1.25)
             className="pointer-events-none"
             opacity={0.9}
         />
@@ -362,8 +364,16 @@ export default function BodyMapEditor() {
 
     const handleAIGenerate = (aiData: any) => {
         const newMarkers: BodyMarker[] = [];
-        const CENTER_FRONT_X = 350;
-        const CENTER_BACK_X = 850;
+        // Adjusted for 75% scale (x=225, w=750)
+        // Original: x=100, w=1000 -> Center Front ~350, Back ~850
+        // New: x=225, w=750 (0.75 ratio) -> Offset Front ~187.5, Back ~562.5
+        const CENTER_FRONT_X = 412;
+        const CENTER_BACK_X = 788;
+
+        // Adjusted Y (y=150, h=600)
+        // Original: y=50, h=800 -> Center Y ~450
+        // New: y=150, h=600 -> Offset ~300 -> Center Y = 450 (Unchanged coincidentally)
+        const CENTER_Y = 450;
 
         const regions: any = {
             'head': { x: 0, y: -250 },
@@ -393,7 +403,7 @@ export default function BodyMapEditor() {
                 else if (f.condition.includes('機能') || f.condition.includes('Loss')) type = 'FunctionLoss';
 
                 const baseX = region.view === 'back' ? CENTER_BACK_X : CENTER_FRONT_X;
-                const CENTER_Y = 450;
+                // const CENTER_Y = 450; // Use shared constant
                 const cx = baseX + (region.x || 0);
                 const cy = CENTER_Y + (region.y || 0);
 
