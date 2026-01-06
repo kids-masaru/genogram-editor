@@ -54,7 +54,7 @@ const BodyMapImage = () => {
             x={225}    // Centered horizontally: (1400 - 750) / 2 = 325? No, previous was 100 with width 1000. 
             // Original: 1000x800. 75% = 750x600.
             // Center 750 in 1400 canvas: (1400-750)/2 = 325. Let's use 325.
-            y={150}    // Center 600 in 900 canvas: (900-600)/2 = 150.
+            y={50}    // Center 600 in 900 canvas: (900-600)/2 = 150. Moved to 50 per user request to show feet.
             width={750}  // 75% of 1000
             height={600} // 75% of 800. Aspect ratio maintained (1000/800 = 1.25, 750/600 = 1.25)
             className="pointer-events-none"
@@ -370,10 +370,10 @@ export default function BodyMapEditor() {
         const CENTER_FRONT_X = 412;
         const CENTER_BACK_X = 788;
 
-        // Adjusted Y (y=150, h=600)
+        // Adjusted Y (y=50, h=600)
         // Original: y=50, h=800 -> Center Y ~450
-        // New: y=150, h=600 -> Offset ~300 -> Center Y = 450 (Unchanged coincidentally)
-        const CENTER_Y = 450;
+        // New: y=50, h=600 -> Offset ~300 -> Center Y = 350
+        const CENTER_Y = 350;
 
         const regions: any = {
             'head': { x: 0, y: -250 },
