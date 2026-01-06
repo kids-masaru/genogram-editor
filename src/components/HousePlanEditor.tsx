@@ -151,6 +151,10 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
     const [showTemplateSave, setShowTemplateSave] = useState(false);
     const [newTemplateName, setNewTemplateName] = useState('');
 
+    // Save/Load State
+    const [showLoadModal, setShowLoadModal] = useState(false);
+    const [savedFiles, setSavedFiles] = useState<string[]>([]);
+
     const updateData = useCallback((newData: KaokuzuData, saveToHistory = true) => {
         // Ensure arrays exist
         const safeData = {
@@ -209,6 +213,70 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
         } catch (e) {
             console.error(e);
             alert('読み込みに失敗しました');
+        }
+    };
+
+    // ===== Save/Load Functions =====
+    const saveToServer = async () => {
+        const name = prompt('保存する名前を入力してください（例：田中邸）', '');
+        if (!name) return;
+        try {
+            const res = await fetch('/api/kaokuzu', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, data }),
+            });
+            if (res.ok) {
+                alert('保存しました！');
+            } else {
+                const err = await res.json();
+                alert('保存に失敗しました: ' + (err.error || ''));
+            }
+        } catch (e) {
+            alert('エラーが発生しました');
+        }
+    };
+
+    const loadListFromServer = async () => {
+        try {
+            const res = await fetch('/api/kaokuzu');
+            const json = await res.json();
+            if (json.files) {
+                setSavedFiles(json.files);
+                setShowLoadModal(true);
+            }
+        } catch (e) {
+            alert('一覧の取得に失敗しました');
+        }
+    };
+
+    const loadFileFromServer = async (name: string) => {
+        try {
+            const res = await fetch(`/api/kaokuzu?name=${name}&t=${Date.now()}`);
+            const json = await res.json();
+            if (json.data) {
+                updateData(json.data);
+                setShowLoadModal(false);
+            } else {
+                alert('データの読み込みに失敗しました');
+            }
+        } catch (e) {
+            alert('読込に失敗しました');
+        }
+    };
+
+    const deleteFileFromServer = async (name: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(`「${name}」を削除しますか？`)) return;
+        try {
+            const res = await fetch(`/api/kaokuzu?name=${name}`, { method: 'DELETE' });
+            if (res.ok) {
+                setSavedFiles(prev => prev.filter(f => f !== name));
+            } else {
+                alert('削除できませんでした');
+            }
+        } catch (e) {
+            alert('削除エラー');
         }
     };
 
@@ -943,6 +1011,12 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
 
                 {/* Panel Footer (Actions) */}
                 <div className="p-3 bg-white border-t border-gray-200 space-y-2 z-10">
+                    {/* Save/Load Buttons */}
+                    <div className="flex gap-2">
+                        <button onClick={saveToServer} className="flex-1 py-2 bg-green-50 text-green-600 border border-green-200 rounded text-xs font-bold hover:bg-green-100">💾 保存</button>
+                        <button onClick={loadListFromServer} className="flex-1 py-2 bg-gray-50 text-gray-600 border border-gray-200 rounded text-xs font-bold hover:bg-gray-100">📂 読込</button>
+                    </div>
+
                     <button
                         onClick={smartExport}
                         className="w-full py-2 bg-white border border-blue-200 text-blue-600 rounded-md text-xs font-bold shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
@@ -969,6 +1043,46 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
                     <button onClick={deleteSelected} disabled={selectedIds.length === 0} className="w-full py-1.5 bg-red-50 text-red-600 rounded text-xs hover:bg-red-100 disabled:opacity-50 disabled:bg-transparent disabled:text-gray-300">🗑️ 削除</button>
                 </div>
             </div>
+
+            {/* Load Modal */}
+            {showLoadModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl">
+                        <h3 className="font-bold mb-4 text-xl flex items-center gap-2 text-gray-800">📂 保存された家屋図</h3>
+                        <div className="max-h-[60vh] overflow-y-auto border border-gray-100 rounded-xl bg-gray-50">
+                            {savedFiles.length === 0 ? (
+                                <div className="p-8 text-center text-gray-400">データがありません</div>
+                            ) : (
+                                <ul className="p-2 space-y-1">
+                                    {savedFiles.map(file => (
+                                        <li key={file} className="flex items-center group bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all overflow-hidden">
+                                            <button
+                                                onClick={() => loadFileFromServer(file)}
+                                                className="flex-1 text-left p-3 text-gray-700 font-medium hover:text-blue-600 transition-colors flex items-center gap-2"
+                                            >
+                                                <span className="text-xl">🏠</span> {file}
+                                            </button>
+                                            <button
+                                                onClick={(e) => deleteFileFromServer(file, e)}
+                                                className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors border-l border-gray-100"
+                                                title="削除"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => setShowLoadModal(false)}
+                            className="mt-6 w-full py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-gray-900 transition-all shadow-lg shadow-gray-200"
+                        >
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
