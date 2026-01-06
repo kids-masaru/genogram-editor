@@ -258,7 +258,7 @@ export default function BodyMapEditor() {
         // Apply transform to points
         const marker = data.markers.find(m => m.id === id);
         if (marker && marker.points) {
-            const newPoints = [];
+            const newPoints: number[] = [];
             const cos = Math.cos(rotation * Math.PI / 180);
             const sin = Math.sin(rotation * Math.PI / 180);
 
