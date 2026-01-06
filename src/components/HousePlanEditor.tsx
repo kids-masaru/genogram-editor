@@ -5,6 +5,7 @@ import { Stage, Layer, Rect, Text, Line, Group, Circle, Transformer, Path } from
 import Konva from 'konva';
 import { KaokuzuData, Room, Furniture, RoomType, FurnitureType } from '@/lib/kaokuzu-types';
 import { useKaokuzuHistory } from '@/hooks/useKaokuzuHistory';
+import { useEditor } from '@/context/EditorContext';
 
 interface HousePlanEditorProps {
     initialData?: KaokuzuData;
@@ -102,6 +103,9 @@ const FURNITURE_SHAPES: Record<FurnitureType, any> = {
 const SNAP_THRESHOLD = 5;
 
 const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
+    const { housePlanData, setHousePlanData } = useEditor();
+    const isRestoredRef = useRef(false);
+
     const defaultData = {
         rooms: [],
         furniture: [],
@@ -109,15 +113,27 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
         scale: 50 // 50px = 1m
     };
 
-    const safeInitialData = initialData ? {
-        ...defaultData,
-        ...initialData,
-        rooms: initialData.rooms || [],
-        furniture: initialData.furniture || []
-    } : defaultData;
-
-    const [data, setData] = useState<KaokuzuData>(safeInitialData);
+    const [data, setData] = useState<KaokuzuData>(defaultData);
     const { takeSnapshot, undo, redo, canUndo, canRedo } = useKaokuzuHistory(data);
+
+    // CRITICAL: Restore from Context on mount
+    useEffect(() => {
+        if (!isRestoredRef.current) {
+            if (housePlanData && (housePlanData.rooms?.length > 0 || housePlanData.furniture?.length > 0)) {
+                console.log('HousePlan: Restoring from Context');
+                setData(housePlanData);
+            } else if (initialData) {
+                setData({ ...defaultData, ...initialData, rooms: initialData.rooms || [], furniture: initialData.furniture || [] });
+            }
+            isRestoredRef.current = true;
+        }
+    }, []);
+
+    // Sync to Context on Change
+    useEffect(() => {
+        if (!isRestoredRef.current) return;
+        setHousePlanData(data);
+    }, [data, setHousePlanData]);
 
     const stageRef = useRef<Konva.Stage>(null);
     const trRef = useRef<Konva.Transformer>(null);

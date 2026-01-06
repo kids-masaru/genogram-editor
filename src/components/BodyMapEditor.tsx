@@ -67,7 +67,12 @@ const BodyMapImage = () => {
 
 export default function BodyMapEditor() {
     const { bodyMapData, setBodyMapData } = useEditor();
-    const [data, setData] = useState<BodyMapData>(bodyMapData || { markers: [], scale: 1 });
+
+    // Track if we have restored from Context
+    const isRestoredRef = useRef(false);
+
+    // Initialize with empty, restore from Context in useEffect
+    const [data, setData] = useState<BodyMapData>({ markers: [], scale: 1 });
     const [history, setHistory] = useState<BodyMapData[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -113,42 +118,51 @@ export default function BodyMapEditor() {
         }
     };
 
-    // Sync local changes to global context
+    // CRITICAL: Restore from Context on mount (runs once)
     useEffect(() => {
-        setBodyMapData(data);
-    }, [data, setBodyMapData]);
-
-    // Handle URL Params or Context on Mount
-    useEffect(() => {
-        if (bodyMapData) {
-            setData(bodyMapData);
-            if (history.length === 0) pushHistory(bodyMapData);
-            return;
-        }
-
-        const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('data');
-        if (encodedData) {
-            try {
-                const jsonStr = LZString.decompressFromEncodedURIComponent(encodedData);
-                if (jsonStr) {
-                    const parsed = JSON.parse(jsonStr);
-                    // Check if combined data
-                    if (parsed.bodyMap) {
-                        updateData(parsed.bodyMap);
-                    } else if (parsed.markers) {
-                        updateData(parsed);
-                    } else if (parsed.findings) {
-                        handleAIGenerate(parsed);
+        if (!isRestoredRef.current) {
+            if (bodyMapData && bodyMapData.markers && bodyMapData.markers.length > 0) {
+                console.log('BodyMap: Restoring from Context:', bodyMapData.markers.length, 'markers');
+                setData(bodyMapData);
+                pushHistory(bodyMapData);
+            } else {
+                // No context data, check URL
+                const params = new URLSearchParams(window.location.search);
+                const encodedData = params.get('data');
+                if (encodedData) {
+                    try {
+                        const jsonStr = LZString.decompressFromEncodedURIComponent(encodedData);
+                        if (jsonStr) {
+                            const parsed = JSON.parse(jsonStr);
+                            if (parsed.bodyMap) {
+                                setData(parsed.bodyMap);
+                                pushHistory(parsed.bodyMap);
+                            } else if (parsed.markers) {
+                                setData(parsed);
+                                pushHistory(parsed);
+                            } else if (parsed.findings) {
+                                handleAIGenerate(parsed);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse URL data", e);
                     }
+                } else {
+                    // Initialize with default
+                    pushHistory(data);
                 }
-            } catch (e) {
-                console.error("Failed to parse URL data", e);
             }
-        } else {
-            if (history.length === 0) pushHistory(data);
+            isRestoredRef.current = true;
         }
     }, []);
+
+    // Sync to Context on Change (only after restoration)
+    useEffect(() => {
+        if (!isRestoredRef.current) {
+            return;
+        }
+        setBodyMapData(data);
+    }, [data, setBodyMapData]);
 
     // useEffect(() => {
     //    if (history.length === 0) pushHistory(data);
