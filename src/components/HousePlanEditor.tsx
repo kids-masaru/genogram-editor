@@ -221,30 +221,25 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
         const name = prompt('保存する名前を入力してください（例：田中邸）', '');
         if (!name) return;
         try {
-            const res = await fetch('/api/kaokuzu', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, data }),
-            });
-            if (res.ok) {
-                alert('保存しました！');
-            } else {
-                const err = await res.json();
-                alert('保存に失敗しました: ' + (err.error || ''));
-            }
+            // Use localStorage for Vercel compatibility
+            const storageKey = 'kaokuzu_saves';
+            const existingSaves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            existingSaves[name] = data;
+            localStorage.setItem(storageKey, JSON.stringify(existingSaves));
+            alert('保存しました！');
         } catch (e) {
-            alert('エラーが発生しました');
+            alert('保存に失敗しました');
         }
     };
 
     const loadListFromServer = async () => {
         try {
-            const res = await fetch('/api/kaokuzu');
-            const json = await res.json();
-            if (json.files) {
-                setSavedFiles(json.files);
-                setShowLoadModal(true);
-            }
+            // Use localStorage
+            const storageKey = 'kaokuzu_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const fileNames = Object.keys(saves);
+            setSavedFiles(fileNames);
+            setShowLoadModal(true);
         } catch (e) {
             alert('一覧の取得に失敗しました');
         }
@@ -252,10 +247,12 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
 
     const loadFileFromServer = async (name: string) => {
         try {
-            const res = await fetch(`/api/kaokuzu?name=${name}&t=${Date.now()}`);
-            const json = await res.json();
-            if (json.data) {
-                updateData(json.data);
+            // Use localStorage
+            const storageKey = 'kaokuzu_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const loadedData = saves[name];
+            if (loadedData) {
+                updateData(loadedData);
                 setShowLoadModal(false);
             } else {
                 alert('データの読み込みに失敗しました');
@@ -269,12 +266,12 @@ const HousePlanEditor: React.FC<HousePlanEditorProps> = ({ initialData }) => {
         e.stopPropagation();
         if (!confirm(`「${name}」を削除しますか？`)) return;
         try {
-            const res = await fetch(`/api/kaokuzu?name=${name}`, { method: 'DELETE' });
-            if (res.ok) {
-                setSavedFiles(prev => prev.filter(f => f !== name));
-            } else {
-                alert('削除できませんでした');
-            }
+            // Use localStorage
+            const storageKey = 'kaokuzu_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            delete saves[name];
+            localStorage.setItem(storageKey, JSON.stringify(saves));
+            setSavedFiles(prev => prev.filter(f => f !== name));
         } catch (e) {
             alert('削除エラー');
         }

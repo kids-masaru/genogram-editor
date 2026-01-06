@@ -486,29 +486,25 @@ function GenogramEditorContent() {
     };
 
     try {
-      const res = await fetch('/api/genograms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, data }),
-      });
-      if (res.ok) {
-        alert('保存しました！');
-      } else {
-        alert('保存に失敗しました');
-      }
+      // Use localStorage for Vercel compatibility (filesystem is read-only)
+      const storageKey = 'genogram_saves';
+      const existingSaves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      existingSaves[name] = data;
+      localStorage.setItem(storageKey, JSON.stringify(existingSaves));
+      alert('保存しました！');
     } catch (e) {
-      alert('エラーが発生しました');
+      alert('保存に失敗しました');
     }
   }, [getNodes, getEdges]);
 
   const loadListFromServer = useCallback(async () => {
     try {
-      const res = await fetch('/api/genograms');
-      const data = await res.json();
-      if (data.genograms) {
-        setSavedFiles(data.genograms);
-        setShowLoadModal(true);
-      }
+      // Use localStorage
+      const storageKey = 'genogram_saves';
+      const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      const fileNames = Object.keys(saves);
+      setSavedFiles(fileNames);
+      setShowLoadModal(true);
     } catch (e) {
       alert('一覧の取得に失敗しました');
     }
@@ -516,15 +512,17 @@ function GenogramEditorContent() {
 
   const loadFileFromServer = useCallback(async (name: string) => {
     try {
-      const res = await fetch(`/api/genograms?name=${name}&t=${Date.now()}`);
-      const json = await res.json();
-      if (json.data) {
+      // Use localStorage
+      const storageKey = 'genogram_saves';
+      const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      const data = saves[name];
+      if (data) {
         takeSnapshot(nodes, edges);
-        setNodes(json.data.nodes || []);
-        setEdges(json.data.edges || []);
+        setNodes(data.nodes || []);
+        setEdges(data.edges || []);
         setShowLoadModal(false);
         setTimeout(() => {
-          takeSnapshot(json.data.nodes, json.data.edges);
+          takeSnapshot(data.nodes, data.edges);
           fitView({ padding: 0.2 });
         }, 100);
       } else {
@@ -536,18 +534,16 @@ function GenogramEditorContent() {
   }, [setNodes, setEdges, nodes, edges, takeSnapshot, fitView]);
 
   const deleteFileFromServer = useCallback(async (name: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // 親のボタンクリック（ロード）を防ぐ
+    e.stopPropagation();
     if (!confirm(`「${name}」を完全に削除しますか？`)) return;
 
     try {
-      const res = await fetch(`/api/genograms?name=${name}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        setSavedFiles(prev => prev.filter(f => f !== name));
-      } else {
-        alert('削除できませんでした');
-      }
+      // Use localStorage
+      const storageKey = 'genogram_saves';
+      const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      delete saves[name];
+      localStorage.setItem(storageKey, JSON.stringify(saves));
+      setSavedFiles(prev => prev.filter(f => f !== name));
     } catch (e) {
       alert('削除エラー');
     }

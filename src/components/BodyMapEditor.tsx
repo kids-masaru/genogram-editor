@@ -341,33 +341,34 @@ export default function BodyMapEditor() {
         const name = prompt('保存する名前を入力してください（例：田中氏_身体図）', '');
         if (!name) return;
         try {
-            const res = await fetch('/api/body-maps', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, data }),
-            });
-            if (res.ok) alert('保存しました！');
-            else alert('保存に失敗しました');
-        } catch (e) { alert('エラーが発生しました'); }
+            // Use localStorage for Vercel compatibility
+            const storageKey = 'bodymap_saves';
+            const existingSaves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            existingSaves[name] = data;
+            localStorage.setItem(storageKey, JSON.stringify(existingSaves));
+            alert('保存しました！');
+        } catch (e) { alert('保存に失敗しました'); }
     };
 
     const loadListFromServer = async () => {
         try {
-            const res = await fetch('/api/body-maps');
-            const json = await res.json();
-            if (json.bodyMaps) {
-                setSavedFiles(json.bodyMaps);
-                setShowLoadModal(true);
-            }
+            // Use localStorage
+            const storageKey = 'bodymap_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const fileNames = Object.keys(saves);
+            setSavedFiles(fileNames);
+            setShowLoadModal(true);
         } catch (e) { alert('一覧の取得に失敗しました'); }
     };
 
     const loadFileFromServer = async (name: string) => {
         try {
-            const res = await fetch(`/api/body-maps?name=${name}&t=${Date.now()}`);
-            const json = await res.json();
-            if (json.data) {
-                updateData(json.data);
+            // Use localStorage
+            const storageKey = 'bodymap_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const loadedData = saves[name];
+            if (loadedData) {
+                updateData(loadedData);
                 setShowLoadModal(false);
             } else alert('読込失敗');
         } catch (e) { alert('読込失敗'); }
@@ -377,8 +378,12 @@ export default function BodyMapEditor() {
         e.stopPropagation();
         if (!confirm(`「${name}」を完全に削除しますか？`)) return;
         try {
-            const res = await fetch(`/api/body-maps?name=${name}`, { method: 'DELETE' });
-            if (res.ok) setSavedFiles(prev => prev.filter(f => f !== name));
+            // Use localStorage
+            const storageKey = 'bodymap_saves';
+            const saves = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            delete saves[name];
+            localStorage.setItem(storageKey, JSON.stringify(saves));
+            setSavedFiles(prev => prev.filter(f => f !== name));
         } catch (e) { alert('削除エラー'); }
     };
 
