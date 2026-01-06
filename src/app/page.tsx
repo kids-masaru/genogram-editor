@@ -40,23 +40,39 @@ import Header from '@/components/Header';
 // ... (Imports)
 
 function GenogramEditorContent() {
-  // Context - MOVED UP to initialize state
+  // Context
   const { genogramData, setGenogramData, bodyMapData, setBodyMapData, housePlanData, setHousePlanData } = useEditor();
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
 
-  // Initialize with Context Data if available
-  const [nodes, setNodes, onNodesChange] = useNodesState(genogramData?.nodes || initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(genogramData?.edges || initialEdges);
+  // Track if we have restored from Context (prevents overwriting)
+  const isRestoredRef = useRef(false);
 
-  // Sync to Context on Change
+  // Initialize with empty - we will restore from Context in useEffect
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const { getNodes, getEdges, fitView } = useReactFlow();
+
+  // CRITICAL: Restore from Context on mount (runs once)
   useEffect(() => {
-    // CRITICAL: Protection against overwriting context with initial empty state
-    // If context has data (genogramData?.nodes.length > 0) AND local nodes are empty,
-    // it means we are in the initial mount phase where local state hasn't caught up or failed to init.
-    // In this case, DO NOT sync empty state back to context.
-    if (nodes.length === 0 && edges.length === 0 && genogramData && genogramData.nodes.length > 0) {
+    if (!isRestoredRef.current && genogramData && genogramData.nodes.length > 0) {
+      console.log('Restoring from Context:', genogramData.nodes.length, 'nodes');
+      setNodes(genogramData.nodes);
+      setEdges(genogramData.edges);
+      isRestoredRef.current = true;
+      setTimeout(() => fitView({ padding: 0.2 }), 100);
+    } else if (!isRestoredRef.current) {
+      // No context data, mark as restored anyway to allow sync
+      isRestoredRef.current = true;
+    }
+  }, [genogramData, setNodes, setEdges, fitView]);
+
+  // Sync to Context on Change (only after restoration is complete)
+  useEffect(() => {
+    if (!isRestoredRef.current) {
+      // Don't sync during initial restoration phase
       return;
     }
     setGenogramData({ nodes, edges });
@@ -72,8 +88,6 @@ function GenogramEditorContent() {
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [savedFiles, setSavedFiles] = useState<string[]>([]);
-
-  const { getNodes, getEdges, fitView } = useReactFlow();
 
   // URL Parmas
   const loadedDataRef = useRef<string | null>(null);
