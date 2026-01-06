@@ -6,6 +6,8 @@ import Konva from 'konva';
 import useImage from 'use-image';
 import LZString from 'lz-string';
 import AIInputPanel from './AIInputPanel';
+import { useEditor } from '@/context/EditorContext';
+import Header from './Header';
 
 // --- Types ---
 export type MarkerType = 'Paralysis' | 'Missing' | 'FunctionLoss' | 'Comment';
@@ -64,7 +66,8 @@ const BodyMapImage = () => {
 };
 
 export default function BodyMapEditor() {
-    const [data, setData] = useState<BodyMapData>({ markers: [], scale: 1 });
+    const { bodyMapData, setBodyMapData } = useEditor();
+    const [data, setData] = useState<BodyMapData>(bodyMapData || { markers: [], scale: 1 });
     const [history, setHistory] = useState<BodyMapData[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -110,8 +113,19 @@ export default function BodyMapEditor() {
         }
     };
 
-    // Handle URL Params on Mount
+    // Sync local changes to global context
     useEffect(() => {
+        setBodyMapData(data);
+    }, [data, setBodyMapData]);
+
+    // Handle URL Params or Context on Mount
+    useEffect(() => {
+        if (bodyMapData) {
+            setData(bodyMapData);
+            if (history.length === 0) pushHistory(bodyMapData);
+            return;
+        }
+
         const params = new URLSearchParams(window.location.search);
         const encodedData = params.get('data');
         if (encodedData) {
@@ -119,7 +133,10 @@ export default function BodyMapEditor() {
                 const jsonStr = LZString.decompressFromEncodedURIComponent(encodedData);
                 if (jsonStr) {
                     const parsed = JSON.parse(jsonStr);
-                    if (parsed.markers) {
+                    // Check if combined data
+                    if (parsed.bodyMap) {
+                        updateData(parsed.bodyMap);
+                    } else if (parsed.markers) {
                         updateData(parsed);
                     } else if (parsed.findings) {
                         handleAIGenerate(parsed);
@@ -427,17 +444,7 @@ export default function BodyMapEditor() {
 
     return (
         <div className="flex h-screen bg-gray-50 font-sans text-slate-700 overflow-hidden relative" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
-            <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 px-4 flex items-center shadow-sm z-50">
-                <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-gray-700">CareDX Editor</span>
-                </div>
-                <div className="mx-6 h-6 w-px bg-gray-300"></div>
-                <div className="flex bg-gray-100 p-1 rounded-lg">
-                    <button onClick={() => window.location.href = '/'} className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all">👨‍👩‍👧‍👦 ジェノグラム</button>
-                    <button onClick={() => window.location.href = '/house-plan'} className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all">🏠 家屋図</button>
-                    <button className="px-4 py-1.5 bg-white text-blue-600 shadow-sm rounded-md text-sm font-bold transition-all">👤 身体図</button>
-                </div>
-            </div>
+            <Header />
 
             <div className="absolute inset-0 pt-14 bg-slate-50 overflow-hidden cursor-crosshair">
                 <Stage

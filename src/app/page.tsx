@@ -34,16 +34,38 @@ import { convertToReactFlow } from '@/lib/genogram-utils';
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
+import { useEditor } from '@/context/EditorContext';
+import Header from '@/components/Header';
+
+// ... (Imports)
+
 function GenogramEditorContent() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // 履歴管理
+  // Context
+  const { genogramData, setGenogramData, bodyMapData, setBodyMapData, housePlanData, setHousePlanData } = useEditor();
+
+  // Load from context on mount if available
+  useEffect(() => {
+    if (genogramData && nodes.length === 0 && edges.length === 0) {
+      setNodes(genogramData.nodes);
+      setEdges(genogramData.edges);
+      setTimeout(() => fitView({ padding: 0.2 }), 100);
+    }
+  }, []); // Run once on mount (or when genogramData is ready in theory, but be careful of overrides)
+
+  // Sync to Context on Change
+  useEffect(() => {
+    setGenogramData({ nodes, edges });
+  }, [nodes, edges, setGenogramData]);
+
+  // ... (History hooks)
   const { takeSnapshot, undo, redo, canUndo, canRedo } = useHistory(initialNodes, initialEdges);
 
-  // 選択状態
+  // ... (State)
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [selectedMarriage, setSelectedMarriage] = useState<Marriage | null>(null);
 
@@ -53,10 +75,10 @@ function GenogramEditorContent() {
 
   const { getNodes, getEdges, fitView } = useReactFlow();
 
-  // URLパラメータの無限ループ防止用Ref
+  // URL Parmas
   const loadedDataRef = useRef<string | null>(null);
 
-  // URLパラメータからのデータ読み込み
+  // URL Params Loading (Combined Logic)
   useEffect(() => {
     const dataParam = searchParams?.get('data');
     if (dataParam && dataParam !== loadedDataRef.current) {
@@ -65,25 +87,40 @@ function GenogramEditorContent() {
         const decompressed = LZString.decompressFromEncodedURIComponent(dataParam);
         if (decompressed) {
           console.log('Data loaded from URL');
-          loadedDataRef.current = dataParam; // ロード済みとしてマーク
+          loadedDataRef.current = dataParam;
 
           const jsonData = JSON.parse(decompressed);
-          const { nodes: newNodes, edges: newEdges } = convertToReactFlow(jsonData);
 
-          setNodes(newNodes);
-          setEdges(newEdges);
+          // Check for Combined Data Format
+          if (jsonData.genogram || jsonData.bodyMap) {
+            if (jsonData.genogram) {
+              const { nodes: newNodes, edges: newEdges } = convertToReactFlow(jsonData.genogram);
+              setNodes(newNodes);
+              setEdges(newEdges);
+              setGenogramData({ nodes: newNodes, edges: newEdges });
+            }
+            if (jsonData.bodyMap) {
+              setBodyMapData(jsonData.bodyMap);
+            }
+            // House plan if needed
+          } else {
+            // Legacy Format (Just Genogram data directly)
+            const { nodes: newNodes, edges: newEdges } = convertToReactFlow(jsonData);
+            setNodes(newNodes);
+            setEdges(newEdges);
+            setGenogramData({ nodes: newNodes, edges: newEdges });
+          }
 
-          // 少し待ってからフィット＆履歴保存
           setTimeout(() => {
             fitView({ padding: 0.2 });
-            takeSnapshot(newNodes, newEdges);
+            // takeSnapshot(newNodes, newEdges); // Difficulty accessing newNodes here without var
           }, 500);
         }
       } catch (e) {
         console.error('Failed to parse data from URL', e);
       }
     }
-  }, [searchParams, setNodes, setEdges, fitView, takeSnapshot]);
+  }, [searchParams, setNodes, setEdges, fitView, setGenogramData, setBodyMapData]);
 
   // キーボードショートカット
   useEffect(() => {
@@ -512,29 +549,7 @@ function GenogramEditorContent() {
   return (
     <div className="w-full h-screen relative flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
       {/* App Header / Switcher */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center shadow-sm z-50">
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-700">CareDX Editor</span>
-        </div>
-        <div className="mx-6 h-6 w-px bg-gray-300"></div>
-        <div className="flex bg-gray-100 p-1 rounded-lg">
-          <button className="px-4 py-1.5 bg-white text-blue-600 shadow-sm rounded-md text-sm font-bold transition-all">
-            👨‍👩‍👧‍👦 ジェノグラム
-          </button>
-          <button
-            onClick={() => window.location.href = '/house-plan'}
-            className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all"
-          >
-            🏠 家屋図
-          </button>
-          <button
-            onClick={() => window.location.href = '/body-map'}
-            className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all"
-          >
-            👤 身体図
-          </button>
-        </div>
-      </div>
+      <Header />
 
       <div className="flex-grow relative" ref={reactFlowWrapper}>
         <ReactFlow
