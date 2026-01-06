@@ -52,10 +52,15 @@ function GenogramEditorContent() {
 
   // Sync to Context on Change
   useEffect(() => {
-    // Only sync if we have data or if strictly intended (prevent wiping context on initial mount if empty? 
-    // No, if initialized from context, this is safe. If context was empty, this is also safe.)
+    // CRITICAL: Protection against overwriting context with initial empty state
+    // If context has data (genogramData?.nodes.length > 0) AND local nodes are empty,
+    // it means we are in the initial mount phase where local state hasn't caught up or failed to init.
+    // In this case, DO NOT sync empty state back to context.
+    if (nodes.length === 0 && edges.length === 0 && genogramData && genogramData.nodes.length > 0) {
+      return;
+    }
     setGenogramData({ nodes, edges });
-  }, [nodes, edges, setGenogramData]);
+  }, [nodes, edges, setGenogramData, genogramData]);
 
   // ... (History hooks)
   const { takeSnapshot, undo, redo, canUndo, canRedo } = useHistory(initialNodes, initialEdges);
