@@ -140,9 +140,8 @@ export default function BodyMapEditor() {
                             } else if (parsed.markers) {
                                 setData(parsed);
                                 pushHistory(parsed);
-                            } else if (parsed.findings) {
-                                handleAIGenerate(parsed);
                             }
+                            // Note: 'findings' format handled by handleAIGenerate is no longer used from URL
                         }
                     } catch (e) {
                         console.error("Failed to parse URL data", e);
