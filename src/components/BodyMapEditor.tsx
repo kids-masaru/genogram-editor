@@ -501,7 +501,7 @@ export default function BodyMapEditor() {
                         )}
                         <Transformer
                             ref={trRef}
-                            boundBoxFunc={(oldBox, newBox) => {
+                            boundBoxFunc={(oldBox: any, newBox: any) => {
                                 if (newBox.width < 10 || newBox.height < 10) {
                                     return oldBox;
                                 }
