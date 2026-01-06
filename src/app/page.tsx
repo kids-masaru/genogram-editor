@@ -572,16 +572,6 @@ function GenogramEditorContent() {
               minWidth: '160px',
               border: '1px solid #e2e8f0'
             }}>
-              <button
-                onClick={() => setShowAIPanel(true)}
-                style={{
-                  padding: '8px 10px', background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', border: 'none',
-                  borderRadius: '6px', cursor: 'pointer', fontSize: '13px',
-                  color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                }}
-              >
-                <span>🤖</span> AI生成補助
-              </button>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' }}>
                 <button

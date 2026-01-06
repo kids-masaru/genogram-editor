@@ -573,12 +573,6 @@ export default function BodyMapEditor() {
                 </div>
 
                 <div className="mt-auto space-y-3 pt-4 border-t border-gray-100">
-                    <button
-                        onClick={() => setShowAIPanel(true)}
-                        className="w-full py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-violet-200 hover:shadow-violet-300 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                    >
-                        <span>✨</span> AI自動生成
-                    </button>
 
                     <div className="grid grid-cols-2 gap-2">
                         <button onClick={saveToServer} className="py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg text-xs font-bold hover:bg-gray-50 flex items-center justify-center gap-1">💾 保存</button>
