@@ -19,11 +19,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'APIキーが設定されていません' }, { status: 400 });
     }
 
+    const type = formData.get('type') as string || 'genogram';
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    // プロンプトの構築
-    const promptText = `あなたは家族構成を分析する専門家です。
+    let promptText = '';
+
+    if (type === 'body_map') {
+      promptText = `あなたは介護アセスメントの専門家です。
+以下の入力（テキスト、音声、画像、PDFなど）を分析し、**身体的な問題点や状態（麻痺、欠損、褥瘡、痛み、皮膚トラブルなど）**を抽出してJSON形式で出力してください。
+身体図（Body Map）にマッピングするために使用します。
+
+【出力形式】
+{
+  "findings": [
+    {
+      "part": "部位を表す英語キー（下記リストから選択）",
+      "condition": "状態の簡潔な説明（例: 右片麻痺, 左下腿欠損, 仙骨部発赤）",
+      "note": "詳細なメモ（例: レベル3、処置が必要など）"
+    }
+  ]
+}
+
+【部位キーのリスト】
+head, face, neck, shoulder, right_shoulder, left_shoulder, 
+chest, stomach, back, hip,
+arm, right_arm, left_arm, hand,
+leg, right_leg, left_leg, foot
+
+【ルール】
+- "part"は必ず上記の英語キーから最も近いものを選んでください。
+- 麻痺、切断（欠損）、痛み、褥瘡、皮膚疾患などの身体的な異常を優先して抽出してください。
+- 入力情報にない場合は推測せず、確実な情報のみを出力してください。
+
+【入力情報】
+${text}
+
+JSONのみを出力してください。`;
+    } else {
+      // Genogram Prompt
+      promptText = `あなたは家族構成を分析する専門家です。
 以下の入力（テキスト、音声、画像、PDFなど）を総合的に分析し、ジェノグラム（家族構成図）を作成するための情報をJSON形式で抽出してください。
 
 【出力形式】
@@ -74,6 +110,7 @@ export async function POST(request: NextRequest) {
 ${text}
 
 JSONのみを出力してください。説明は不要です。`;
+    }
 
     // マルチモーダル入力パーツの作成
     const parts: any[] = [{ text: promptText }];

@@ -3,13 +3,16 @@ import { Node, Edge } from 'reactflow';
 import { Person } from '@/lib/types';
 import { convertToReactFlow } from '@/lib/genogram-utils';
 
-interface AIInputPanelProps {
-    onGenerate: (nodes: Node[], edges: Edge[]) => void;
+export interface AIInputPanelProps {
+    onGenerate: (data: any, extra?: any) => void;
     onClose: () => void;
+    mode?: 'genogram' | 'body_map';
 }
 
-export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps) {
-    const [text, setText] = useState(`本人は田中太郎（65歳、男性）。妻の田中花子（62歳）と同居。
+export default function AIInputPanel({ onGenerate, onClose, mode = 'genogram' }: AIInputPanelProps) {
+    const [text, setText] = useState(mode === 'body_map'
+        ? '本人は右片麻痺があり、車椅子を使用。左足に切断の既往あり。仙骨部に褥瘡の恐れがあるため注意が必要。'
+        : `本人は田中太郎（65歳、男性）。妻の田中花子（62歳）と同居。
 長男の田中一郎（38歳）は結婚して独立、妻と子供2人あり。
 長女の田中美咲（35歳）は離婚して実家に戻ってきている。
 本人の父は3年前に他界、母（88歳）は施設入所中で認知症あり。`);
@@ -70,13 +73,13 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
             const formData = new FormData();
             formData.append('text', text);
             formData.append('apiKey', apiKey);
+            formData.append('type', mode);
             files.forEach(file => {
                 formData.append('files', file);
             });
 
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                // Content-Typeは指定しない（FormDataが自動設定するboundaryが必要なため）
                 body: formData,
             });
 
@@ -86,9 +89,12 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
                 throw new Error(data.error || 'AI生成に失敗しました');
             }
 
-            // データをノードとエッジに変換
-            const { nodes, edges } = convertToReactFlow(data);
-            onGenerate(nodes, edges);
+            if (mode === 'genogram') {
+                const { nodes, edges } = convertToReactFlow(data);
+                onGenerate(nodes, edges);
+            } else {
+                onGenerate(data);
+            }
             onClose();
         } catch (err: any) {
             setError(err.message || 'エラーが発生しました');
@@ -120,7 +126,9 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
                 overflow: 'auto',
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h2 style={{ margin: 0, fontSize: '20px' }}>🤖 AIでジェノグラム生成</h2>
+                    <h2 style={{ margin: 0, fontSize: '20px' }}>
+                        {mode === 'body_map' ? '🤖 AIで身体図生成' : '🤖 AIでジェノグラム生成'}
+                    </h2>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>×</button>
                 </div>
 
@@ -196,7 +204,7 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
 
                 <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                        家族構成の説明 / 資料
+                        {mode === 'body_map' ? '身体状況の説明 / アセスメントシート' : '家族構成の説明 / 資料'}
                     </label>
                     <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
                         テキストでの説明に加え、音声データ、画像（アセスメントシート等）、PDFをアップロードできます。複合的に分析します。
@@ -205,7 +213,7 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         rows={6}
-                        placeholder="テキストでの説明はこちら（例：本人は田中太郎...）"
+                        placeholder={mode === 'body_map' ? "例：右片麻痺、仙骨部に発赤..." : "テキストでの説明はこちら（例：本人は田中太郎...）"}
                         style={{
                             width: '100%',
                             padding: '10px',
@@ -283,7 +291,7 @@ export default function AIInputPanel({ onGenerate, onClose }: AIInputPanelProps)
                         cursor: loading ? 'not-allowed' : 'pointer',
                     }}
                 >
-                    {loading ? '生成中...' : '✨ ジェノグラムを生成'}
+                    {loading ? '生成中...' : (mode === 'body_map' ? '✨ 身体図を生成' : '✨ ジェノグラムを生成')}
                 </button>
             </div>
         </div>

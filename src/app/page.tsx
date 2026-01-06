@@ -58,7 +58,7 @@ function GenogramEditorContent() {
 
   // URLパラメータからのデータ読み込み
   useEffect(() => {
-    const dataParam = searchParams.get('data');
+    const dataParam = searchParams?.get('data');
     if (dataParam && dataParam !== loadedDataRef.current) {
       try {
         console.log('Param changed, loading data...');
@@ -305,19 +305,12 @@ function GenogramEditorContent() {
       let posX = 100;
       let posY = 100;
 
-      // reactFlowInstanceがなくても計算できるように簡易的なロジック
-      // 本来は project() を使うと良いが、ここでは単純に既存ノードの平均位置やラッパーがあればそれを使う
-      // しかしもっと単純に、現在表示されている領域の中心を取得したい
-      // getNodes()で既存ノードがあれば、その最後のノードの近く、なければ(100,100)
       const currentNodes = getNodes();
       if (currentNodes.length > 0) {
         const lastNode = currentNodes[currentNodes.length - 1];
         posX = lastNode.position.x + 50;
         posY = lastNode.position.y + 50;
       }
-
-      // もしgetNodesで取得できなければ、画面中央(とりあえず固定値よりはマシな位置)にしておく
-      // const center = project({ x: window.innerWidth / 2, y: window.innerHeight / 2 }); が理想だが...
 
       const newNode: Node = {
         id,
@@ -517,186 +510,222 @@ function GenogramEditorContent() {
   );
 
   return (
-    <div className="w-full h-screen relative" ref={reactFlowWrapper}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodeClick={onNodeClick}
-        onNodeContextMenu={onNodeContextMenu}
-        nodeTypes={nodeTypes}
-        fitView
-        snapToGrid
-        snapGrid={[15, 15]}
-        connectionMode={ConnectionMode.Loose}
-        connectionLineStyle={{ stroke: '#333', strokeWidth: 2 }}
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-          style: { stroke: '#333', strokeWidth: 2 },
-        }}
-        deleteKeyCode={["Backspace", "Delete"]}
-      >
-        <Background color="#e0e0e0" gap={20} className="no-export" />
-        <Controls className="no-export" />
-
-        <Panel position="top-center" className="no-export">
-          <div style={{ background: 'white', padding: '8px 16px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-            <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-              👨‍👩‍👧‍👦 ジェノグラムエディタ
-            </h1>
-          </div>
-        </Panel>
-
-        <Panel position="top-left" className="no-export">
-          <div style={{
-            background: 'white',
-            padding: '12px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            minWidth: '160px'
-          }}>
-            <button
-              onClick={() => setShowAIPanel(true)}
-              style={{
-                padding: '8px 10px', background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', border: 'none',
-                borderRadius: '6px', cursor: 'pointer', fontSize: '13px',
-                color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-              }}
-            >
-              <span>🤖</span> AI生成
-            </button>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '8px' }}>
-              <button
-                onClick={() => addPerson('M')}
-                style={{
-                  padding: '6px', background: '#dbeafe', border: 'none',
-                  borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'center'
-                }}
-              >
-                🔲 男性
-              </button>
-
-              <button
-                onClick={() => addPerson('F')}
-                style={{
-                  padding: '6px', background: '#fce7f3', border: 'none',
-                  borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'center'
-                }}
-              >
-                ⚪ 女性
-              </button>
-            </div>
-
-            <button
-              onClick={() => addPerson('U')}
-              style={{
-                padding: '6px', background: '#dcfce7', border: 'none',
-                borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'center', width: '100%', marginTop: '4px'
-              }}
-            >
-              🔶 不明
-            </button>
-
-            <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button onClick={handleUndo} disabled={!canUndo} style={{ flex: 1, padding: '4px', cursor: canUndo ? 'pointer' : 'default', opacity: canUndo ? 1 : 0.5, border: '1px solid #ddd', borderRadius: '4px' }}>↩️</button>
-              <button onClick={handleRedo} disabled={!canRedo} style={{ flex: 1, padding: '4px', cursor: canRedo ? 'pointer' : 'default', opacity: canRedo ? 1 : 0.5, border: '1px solid #ddd', borderRadius: '4px' }}>↪️</button>
-            </div>
-
-            <div style={{ fontSize: '10px', color: '#999', marginTop: '4px', textAlign: 'center' }}>Ctrl+Z / Ctrl+Y</div>
-
-            <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
-            <button onClick={saveToServer} style={{ padding: '6px', background: '#f3f4f6', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'left' }}>💾 保存</button>
-            <button onClick={loadListFromServer} style={{ padding: '6px', background: '#f3f4f6', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '4px' }}>📂 開く</button>
-            <button onClick={exportPng} style={{ padding: '6px', background: '#e0f2fe', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '8px', color: '#0369a1' }}>🖼️ 画像保存</button>
-            <button onClick={clearAll} style={{ padding: '6px', background: '#fee2e2', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '8px', color: '#b91c1c' }}>🗑️ クリア</button>
-          </div>
-        </Panel>
-
-        {/* プロパティパネルを右上に配置 */}
-        {selectedPerson && (
-          <Panel position="top-right" className="no-export">
-            <PropertyPanel
-              person={selectedPerson}
-              onUpdate={updatePerson}
-              onDelete={deletePerson}
-              onClose={() => setSelectedPerson(null)}
-            />
-          </Panel>
-        )}
-
-        {selectedMarriage && (
-          <Panel position="top-right" className="no-export">
-            <RelationshipPanel
-              marriage={selectedMarriage}
-              onUpdate={updateMarriage}
-              onDelete={deleteMarriage}
-              onClose={() => setSelectedMarriage(null)}
-            />
-          </Panel>
-        )}
-      </ReactFlow>
-
-      {showAIPanel && (
-        <AIInputPanel
-          onGenerate={handleAIGenerate}
-          onClose={() => setShowAIPanel(false)}
-        />
-      )}
-
-      {/* 読込モーダル */}
-      {showLoadModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} className="no-export">
-          <div style={{ background: 'white', padding: '20px', borderRadius: '8px', minWidth: '320px' }}>
-            <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>保存されたデータ</h3>
-            <ul style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px', padding: 0 }}>
-              {savedFiles.map(file => (
-                <li key={file} style={{ listStyle: 'none', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-                  <button
-                    onClick={() => loadFileFromServer(file)}
-                    style={{
-                      flex: 1, textAlign: 'left', padding: '10px',
-                      background: 'white', border: 'none',
-                      cursor: 'pointer'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.background = '#f9fafb'}
-                    onMouseOut={(e) => e.currentTarget.style.background = 'white'}
-                  >
-                    📄 {file}
-                  </button>
-                  <button
-                    onClick={(e) => deleteFileFromServer(file, e)}
-                    style={{ padding: '10px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-                    title="削除"
-                  >
-                    🗑️
-                  </button>
-                </li>
-              ))}
-              {savedFiles.length === 0 && <li style={{ padding: '20px', color: '#999', textAlign: 'center', listStyle: 'none' }}>保存されたデータはありません</li>}
-            </ul>
-            <button
-              onClick={() => setShowLoadModal(false)}
-              style={{ marginTop: '10px', padding: '8px 16px', border: '1px solid #ccc', borderRadius: '4px', background: 'white', cursor: 'pointer', width: '100%' }}
-            >
-              キャンセル
-            </button>
-          </div>
+    <div className="w-full h-screen relative flex flex-col" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
+      {/* App Header / Switcher */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center shadow-sm z-50">
+        <div className="flex items-center gap-2">
+          <span className="text-xl font-bold text-gray-700">CareDX Editor</span>
         </div>
-      )}
-    </div>
+        <div className="mx-6 h-6 w-px bg-gray-300"></div>
+        <div className="flex bg-gray-100 p-1 rounded-lg">
+          <button className="px-4 py-1.5 bg-white text-blue-600 shadow-sm rounded-md text-sm font-bold transition-all">
+            👨‍👩‍👧‍👦 ジェノグラム
+          </button>
+          <button
+            onClick={() => window.location.href = '/house-plan'}
+            className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all"
+          >
+            🏠 家屋図
+          </button>
+          <button
+            onClick={() => window.location.href = '/body-map'}
+            className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-sm font-medium transition-all"
+          >
+            👤 身体図
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-grow relative" ref={reactFlowWrapper}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          onNodeContextMenu={onNodeContextMenu}
+          nodeTypes={nodeTypes}
+          fitView
+          snapToGrid
+          snapGrid={[15, 15]}
+          connectionMode={ConnectionMode.Loose}
+          connectionLineStyle={{ stroke: '#333', strokeWidth: 2 }}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            style: { stroke: '#333', strokeWidth: 2 },
+          }}
+          deleteKeyCode={["Backspace", "Delete"]}
+        >
+          <Background color="#f8fafc" gap={20} className="no-export" />
+          <Controls className="no-export" />
+
+          <Panel position="top-left" className="no-export" style={{ marginTop: '10px' }}>
+            <div style={{
+              background: 'white',
+              padding: '12px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              minWidth: '160px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <button
+                onClick={() => setShowAIPanel(true)}
+                style={{
+                  padding: '8px 10px', background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', border: 'none',
+                  borderRadius: '6px', cursor: 'pointer', fontSize: '13px',
+                  color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                }}
+              >
+                <span>🤖</span> AI生成補助
+              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' }}>
+                <button
+                  onClick={() => addPerson('M')}
+                  style={{
+                    padding: '8px', background: '#eff6ff', border: '1px solid #bfdbfe',
+                    borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'center',
+                    color: '#1e40af', fontWeight: 'bold'
+                  }}
+                >
+                  🔲 男性
+                </button>
+
+                <button
+                  onClick={() => addPerson('F')}
+                  style={{
+                    padding: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8',
+                    borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'center',
+                    color: '#be185d', fontWeight: 'bold'
+                  }}
+                >
+                  ⚪ 女性
+                </button>
+              </div>
+
+              <button
+                onClick={() => addPerson('U')}
+                style={{
+                  padding: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0',
+                  borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'center', width: '100%', marginTop: '2px',
+                  color: '#15803d'
+                }}
+              >
+                🔶 不明
+              </button>
+
+              <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                  style={{ flex: 1, padding: '6px', cursor: canUndo ? 'pointer' : 'default', opacity: canUndo ? 1 : 0.5, border: '1px solid #e2e8f0', borderRadius: '6px', background: 'white', color: '#64748b' }}
+                  title="元に戻す (Ctrl+Z)"
+                >
+                  ↩️ Undo
+                </button>
+                <button
+                  onClick={handleRedo}
+                  disabled={!canRedo}
+                  style={{ flex: 1, padding: '6px', cursor: canRedo ? 'pointer' : 'default', opacity: canRedo ? 1 : 0.5, border: '1px solid #e2e8f0', borderRadius: '6px', background: 'white', color: '#64748b' }}
+                  title="やり直す (Ctrl+Y)"
+                >
+                  ↪️ Redo
+                </button>
+              </div>
+
+
+              <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+
+              <button onClick={saveToServer} style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px' }}>💾 サーバー保存</button>
+              <button onClick={loadListFromServer} style={{ padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>📂 一覧を開く</button>
+              <button onClick={exportPng} style={{ padding: '8px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '8px', color: '#0369a1', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>🖼️ 画像で保存</button>
+              <button onClick={clearAll} style={{ padding: '8px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', textAlign: 'left', marginTop: '8px', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '6px' }}>🗑️ 全てクリア</button>
+            </div>
+          </Panel>
+
+          {/* プロパティパネルを右上に配置 */}
+          {selectedPerson && (
+            <Panel position="top-right" className="no-export" style={{ marginTop: '10px' }}>
+              <PropertyPanel
+                person={selectedPerson}
+                onUpdate={updatePerson}
+                onDelete={deletePerson}
+                onClose={() => setSelectedPerson(null)}
+              />
+            </Panel>
+          )}
+
+          {selectedMarriage && (
+            <Panel position="top-right" className="no-export" style={{ marginTop: '10px' }}>
+              <RelationshipPanel
+                marriage={selectedMarriage}
+                onUpdate={updateMarriage}
+                onDelete={deleteMarriage}
+                onClose={() => setSelectedMarriage(null)}
+              />
+            </Panel>
+          )}
+        </ReactFlow>
+
+        {showAIPanel && (
+          <AIInputPanel
+            onGenerate={handleAIGenerate}
+            onClose={() => setShowAIPanel(false)}
+          />
+        )}
+
+        {/* 読込モーダル */}
+        {showLoadModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.5)', zIndex: 100,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }} className="no-export">
+            <div style={{ background: 'white', padding: '20px', borderRadius: '12px', minWidth: '320px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+              <h3 style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>📂 保存されたデータ</h3>
+              <ul style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', padding: 0 }}>
+                {savedFiles.map(file => (
+                  <li key={file} style={{ listStyle: 'none', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center' }}>
+                    <button
+                      onClick={() => loadFileFromServer(file)}
+                      style={{
+                        flex: 1, textAlign: 'left', padding: '12px',
+                        background: 'white', border: 'none',
+                        cursor: 'pointer', fontSize: '14px', color: '#334155'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'white'}
+                    >
+                      📄 {file}
+                    </button>
+                    <button
+                      onClick={(e) => deleteFileFromServer(file, e)}
+                      style={{ padding: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+                {savedFiles.length === 0 && <li style={{ padding: '20px', color: '#94a3b8', textAlign: 'center', listStyle: 'none' }}>保存されたデータはありません</li>}
+              </ul>
+              <button
+                onClick={() => setShowLoadModal(false)}
+                style={{ marginTop: '16px', padding: '10px 16px', border: '1px solid #cbd5e1', borderRadius: '6px', background: 'white', cursor: 'pointer', width: '100%', color: '#475569', fontWeight: 'bold' }}
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div >
   );
 }
 
