@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import LZString from 'lz-string';
 import { KaokuzuData } from '@/lib/kaokuzu-types';
 
@@ -13,12 +13,20 @@ const HousePlanEditor = dynamic(() => import('@/components/HousePlanEditor'), {
 });
 
 export default function HousePlanPage() {
+    return (
+        <Suspense fallback={<div>Loading Page...</div>}>
+            <HousePlanContent />
+        </Suspense>
+    );
+}
+
+function HousePlanContent() {
     const searchParams = useSearchParams();
     const [data, setData] = useState<KaokuzuData | undefined>(undefined);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const dataParam = searchParams.get('data');
+        const dataParam = searchParams?.get('data');
         if (dataParam) {
             try {
                 const decompressed = LZString.decompressFromEncodedURIComponent(dataParam);
